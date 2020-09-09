@@ -1,8 +1,6 @@
 const Server = require("../models/server");
 const Chat = require("../models/chat");
 const Room = require("../models/room");
-const user = require("../models/user");
-const { login } = require("../models/server");
 
 module.exports = function (io) {
     io.on("connection", async function (socket) {
@@ -25,18 +23,29 @@ module.exports = function (io) {
 
                 // join room (DB)
                 const room = await user.joinRoom(roomID);
-                console.log("khoa", user)
 
                 // subscribe user to the room
                 socket.join(room._id);
 
                 // send notification message;
-                io.to(room._id).emit('message', { user: "system", message: `Welcome ${user.user.name} to room ${room.room}` })
+                io.to(room._id).emit('message', {
+                    user: {
+                        name: "System"
+                    },
+                    chat: `Welcome ${user.user.name} to room ${room.room}`
+                })
 
                 const chatHistory = await Chat.find({ room: room._id }).populate("user").sort("-createdAt").limit(20)
-                console.log(chatHistory)
+                chatHistory.unshift({
+                    user:{
+                        name:"System"
+                    },
+                    chat: `You have joined room: ${room.room}.`
+                })
+                console.log(room._id)
+                socket.emit("chatHistory", chatHistory);
                 // return room info to client 
-                return res({ status: "ok", data: { room: room, history: chatHistory }})
+                return res({ status: "ok", data: { room: room } })
             } catch (err) {
                 console.log(err)
                 return res({ status: "error", message: err.message })
@@ -48,7 +57,7 @@ module.exports = function (io) {
 
 
         // chat
-        socket.on("sendMessage", async function(message){
+        socket.on("sendMessage", async function (message) {
             const user = await Server.checkUser(socket.id);
             const chat = await user.chat(message)
             console.log(user.user.room)
@@ -60,9 +69,11 @@ module.exports = function (io) {
 
 
         // leave room 
-        socket.on("leaveRoom", async function(roomID){
+        socket.on("leaveRoom", async function (roomID) {
             socket.leave(roomID);
-        })
+        });
+
+
 
 
 
