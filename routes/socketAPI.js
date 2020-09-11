@@ -12,7 +12,6 @@ module.exports = function (io) {
       const user = await Server.login(name, socket.id);
       return res(user);
     });
-
     // join room
     socket.on("joinRoom", async (roomID, res) => {
       try {
@@ -61,10 +60,9 @@ module.exports = function (io) {
 
     // chat
     socket.on("sendMessage", async function (message) {
-      console.log(message);
       const user = await Server.checkUser(socket.id);
       const chat = await user.chat(message);
-      //   console.log(user.user.room);
+      console.log(user.user.room);
       io.to(user.user.room._id).emit("message", chat);
     });
 

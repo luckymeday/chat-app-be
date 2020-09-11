@@ -11,14 +11,12 @@ const Schema = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "Room",
     },
-
     type: {
       type: String,
       enum: ["string", "link", "image", "video"],
       default: "string",
     },
   },
-
   {
     timestamps: true,
   }

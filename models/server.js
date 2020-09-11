@@ -21,7 +21,7 @@ class Server {
     // insert a doc to Chat model;
     let chat = await Chat.create({
       type: message.type,
-      chat: message,
+      chat: message.chat,
       user: this.user._id,
       room: this.user.room._id,
     });
@@ -47,5 +47,4 @@ class Server {
     return user;
   }
 }
-
 module.exports = Server;
